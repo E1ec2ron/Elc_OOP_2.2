@@ -6,12 +6,12 @@ import re
 from .models import Request, Category
 
 class LoginForm(forms.Form):
-    username = forms.CharField(
+    email = forms.EmailField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Имя пользователя',
+            'placeholder': 'Электронная почта',
         }),
-        label='Имя пользователя'
+        label='Электронная почта'
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
@@ -41,6 +41,12 @@ class CustomUserCreationForm(forms.ModelForm):
         model = User
         fields = ('username', 'full_name', 'email', 'password1', 'password2', 'consent')
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email.endswith('.ru'):
+            raise ValidationError('Ошибка.')
+        return email
+
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if not re.match(r'^[a-zA-Z-]+$', username):
@@ -49,7 +55,7 @@ class CustomUserCreationForm(forms.ModelForm):
 
     def clean_full_name(self):
         full_name = self.cleaned_data.get('full_name')
-        if not re.match(r'^[а-яА-ЯёЁА-Я\s-]+$', full_name):
+        if not re.match(r'^[А-яЁё\s-]+$', full_name):
             raise ValidationError('ФИО должно содержать только кириллицу, дефисы и пробелы.')
         return full_name
 
